@@ -25,4 +25,8 @@ public class Board {
     private List<String> memberUserIds;
     private Map<String, Role> userRoles; // userId -> Role
     private List<String> taskIds;
+
+    public void setUserRoles(String userId, Role role) {
+        userRoles.put(userId,role);
+    }
 }
