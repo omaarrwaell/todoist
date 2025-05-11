@@ -9,9 +9,6 @@ import com.example.Repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * UserService class that provides user-related services.
- */
 @Service
 public class UserService {
 
@@ -65,7 +62,6 @@ public class UserService {
     public void deleteUser(Integer id) {
         userRepository.deleteById(id);
     }
-
 
 
 }
