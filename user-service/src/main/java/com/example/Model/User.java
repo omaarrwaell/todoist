@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,7 +19,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class User {
+public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -52,6 +54,14 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "password_reset_token", length = 100) // Store the reset token
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_token_expiry") // Store when the token expires
+    private LocalDateTime passwordResetTokenExpiry;
+
+
 
     User(UserBuilder builder) {
         this.id = builder.id;

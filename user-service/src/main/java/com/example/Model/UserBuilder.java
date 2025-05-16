@@ -16,6 +16,9 @@ public class UserBuilder {
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 
+    String passwordResetToken;
+    LocalDateTime passwordResetTokenExpiry;
+
 //    public UserBuilder(User user) {
 //
 //        this.user = user;
@@ -68,6 +71,16 @@ public class UserBuilder {
 
     public UserBuilder updatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+        return this;
+    }
+
+    public UserBuilder passwordResetToken(String token) {
+        this.passwordResetToken = token;
+        return this;
+    }
+
+    public UserBuilder passwordResetTokenExpiry(LocalDateTime expiry) {
+        this.passwordResetTokenExpiry = expiry;
         return this;
     }
 
