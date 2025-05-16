@@ -28,7 +28,6 @@ public class BoardLogService {
 
         boardLogRepository.save(log);
 
-        ReminderDTO reminder = new ReminderDTO(userId, boardId, message, LocalDateTime.now().plusSeconds(5));
-        rabbitTemplate.convertAndSend(RabbitMQConfig.REMINDER_EXCHANGE, RabbitMQConfig.REMINDER_ROUTING_KEY, reminder);
+
     }
 }

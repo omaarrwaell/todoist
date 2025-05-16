@@ -4,13 +4,12 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+
 @Getter
 @Setter
 @Document(collection = "boards")
@@ -23,10 +22,13 @@ public class Board {
     private String adminUserId;
 
     private List<String> memberUserIds;
-    private Map<String, Role> userRoles; // userId -> Role
+    private Map<String, Role> userRoles;// userId -> Role
     private List<String> taskIds;
 
     public void setUserRoles(String userId, Role role) {
+        if(userRoles == null) {
+            userRoles = new HashMap<>();
+        }
         userRoles.put(userId,role);
     }
 }

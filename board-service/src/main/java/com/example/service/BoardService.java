@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.model.Board;
+import com.example.model.BoardBuilder;
 import com.example.model.Role;
 import com.example.observer.BoardObserver;
 import com.example.observer.BoardSubject;
@@ -45,12 +46,11 @@ public class BoardService implements BoardSubject {
 
     // Create
     public Board createBoard(Board boardRequest) {
-        Board board = Board.builder()
-                .name(boardRequest.getName())
-                .category(boardRequest.getCategory())
-                .adminUserId(boardRequest.getAdminUserId())
-                .memberUserIds(boardRequest.getMemberUserIds())
-                .taskIds(boardRequest.getTaskIds())
+        Board board = new BoardBuilder()
+                .setName(boardRequest.getName())
+                .setCategory(boardRequest.getCategory())
+                .setAdmin(boardRequest.getAdminUserId())
+                .addUser(boardRequest.getAdminUserId(), Role.ADMIN)
                 .build();
 
         return boardRepository.save(board);
@@ -75,6 +75,7 @@ public class BoardService implements BoardSubject {
             existingBoard.setMemberUserIds(updatedBoard.getMemberUserIds());
             return boardRepository.save(existingBoard);
         });
+
     }
 
     // Delete
@@ -106,7 +107,10 @@ public class BoardService implements BoardSubject {
                 board.setMemberUserIds(members);
             }
             board.setUserRoles(userId,role);
-            boardLogService.logAction(boardId, userId, "USER_ASSIGNED", "USER x assigned to Board Y");
+            boardLogService.logAction(boardId, userId, "USER_ASSIGNED", "USER " + userId + " assigned to Board " + boardId);
+
+            notifyObservers(boardId, "USER_ASSIGNED", "User " + userId + " assigned to board " + boardId);
+
             return boardRepository.save(board);
 
         });
@@ -114,6 +118,8 @@ public class BoardService implements BoardSubject {
     public void assignTaskToUser(String taskId, String userId) {
 
         taskClient.assignTaskToUser(taskId, userId);
+        notifyObservers(taskId, "TASK_ASSIGNED_TO_USER", "Task " + taskId + " assigned to user " + userId);
+
 
     }
     public List<Board> getBoardsByCategory(String category) {

@@ -1,7 +1,5 @@
 package com.example.dto;
 
-
-
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,8 +10,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class ReminderDTO {
+
+    private String title;
+    private String description;
+    private LocalDateTime reminderTime;
+    private String priority;
     private String userId;
-    private String taskId;
-    private String message;
-    private LocalDateTime remindAt;
+    private String status;
 }
