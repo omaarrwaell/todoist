@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: omaarrwaell/api-gateway:1.0
+          ports:
+            - containerPort: 8085
+          env:
+            # activate your k8s profile if you have one
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+            # any additional env vars your gateway needs can go here

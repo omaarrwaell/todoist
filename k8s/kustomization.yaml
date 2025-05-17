@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Infrastructure
+  - mongodb/mongo-service.yaml
+  - mongodb/mongo-stateful.yaml
+  - rabbitmq/rabbitmq-deployment.yaml
+  - rabbitmq/rabbitmq-secret.yaml
+  
+  # Services
+  - services/api-gateway.yaml
+
+# Create services from template
+replacements:
+  - source:
+      kind: Deployment
+      name: microservices-template
+      fieldPath: spec
+    targets:
+      - select:
+          kind: Deployment
+          name: user-service
+      - select:
+          kind: Deployment
+          name: task-service
+      - select:
+          kind: Deployment
+          name: board-service
+      - select:
+          kind: Deployment
+          name: reminder-service
+      - select:
+          kind: Deployment
+          name: search-service 

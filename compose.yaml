@@ -1,36 +1,36 @@
-version: '3.7'
-
 services:
-  # MongoDB service
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: user_db
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
   mongo:
-    image: mongo:latest
-    container_name: mongo
+    image: mongo
     restart: always
-    networks:
-      - todoist-network
     ports:
       - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
-  # RabbitMQ service
-  rabbitmq:
-    image: "rabbitmq:3-management"
-    container_name: rabbitmq
-    restart: always
-    networks:
-      - todoist-network
-    ports:
-      - "15672:15672"  # RabbitMQ management UI
-      - "5672:5672"    # RabbitMQ default port
-    environment:
-      RABBITMQ_DEFAULT_USER: "guest"
-      RABBITMQ_DEFAULT_PASS: "guest"
-
-networks:
-  todoist-network:
-    driver: bridge
-
-volumes:
-  mongo-data:
-    driver: local
