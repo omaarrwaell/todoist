@@ -1,13 +1,14 @@
 package com.example.command;
 
+import com.example.composite.TaskLeaf;
 import com.example.models.Task;
 import com.example.services.TaskService;
 
 public class CreateTask implements Command {
     private final TaskService taskService;
-    private final Task task;
+    private final TaskLeaf task;
 
-    public CreateTask(TaskService taskService, Task task) {
+    public CreateTask(TaskService taskService, TaskLeaf task) {
         this.taskService = taskService;
         this.task = task;
     }

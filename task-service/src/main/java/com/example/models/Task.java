@@ -1,15 +1,10 @@
 package com.example.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,11 +16,9 @@ import java.util.List;
 @Builder
 @Document(collection = "tasks")
 public class Task {
-
     @Id
     private String id;
 
-    @Indexed
     private String title;
 
     private String description;
@@ -36,11 +29,8 @@ public class Task {
 
     private String boardId;
 
-    // For filtering by tag
-    @Builder.Default
     private List<String> tags = new ArrayList<>();
 
-    // For sorting by date
     @CreatedDate
     private Date createdAt;
 
@@ -49,52 +39,15 @@ public class Task {
 
     private Date dueDate;
 
-
-    @Indexed
-    private String priority; // Could be "LOW", "MEDIUM", "HIGH", "URGENT"
-
+    private String priority;
 
     private String flag;
 
+    private String parentId;  // Null if it's a top-level task
 
-    @Builder.Default
-    private List<String> subtaskIds = new ArrayList<>();
+    private List<String> childrenIds = new ArrayList<>();
 
-    private String parentTaskId;
+    private boolean isSubtask;  // To distinguish between tasks and subtasks
 
-    private boolean isCompleted;
-
-    private int estimatedHours;
-
-    private int actualHours;
-
-
-    public Task(String title, String description, String status, String assignedUserId, String boardId) {
-        this.title = title;
-        this.description = description;
-        this.status = status;
-        this.assignedUserId = assignedUserId;
-        this.boardId = boardId;
-    }
-
-
-    public void addTag(String tag) {
-        if (this.tags == null) {
-            this.tags = new ArrayList<>();
-        }
-        this.tags.add(tag);
-    }
-
-    public void removeTag(String tag) {
-        if (this.tags != null) {
-            this.tags.remove(tag);
-        }
-    }
-
-    public void addSubtaskId(String subtaskId) {
-        if (this.subtaskIds == null) {
-            this.subtaskIds = new ArrayList<>();
-        }
-        this.subtaskIds.add(subtaskId);
-    }
+    private boolean completed;
 }

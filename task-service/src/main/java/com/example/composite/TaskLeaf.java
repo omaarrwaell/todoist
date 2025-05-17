@@ -1,8 +1,9 @@
-package  com.example.composite;
+package com.example.composite;
+
 import lombok.Data;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 
 @Data
 public class TaskLeaf implements TaskComponent {
@@ -10,6 +11,11 @@ public class TaskLeaf implements TaskComponent {
     private String title;
     private String description;
     private boolean completed;
+
+    // Feature-specific fields
+    private List<String> tags = new ArrayList<>();
+    private String priority;
+    private String flag;
 
     public TaskLeaf(String id, String title) {
         this.id = id;
@@ -20,7 +26,6 @@ public class TaskLeaf implements TaskComponent {
     @Override
     public void markComplete() {
         this.completed = true;
-        System.out.println("Task '" + title + "' marked as complete");
     }
 
     @Override
@@ -45,16 +50,31 @@ public class TaskLeaf implements TaskComponent {
 
     @Override
     public List<TaskComponent> getSubTasks() {
-        return Collections.emptyList();  // Return empty list instead of null
+        return Collections.emptyList();
     }
 
     @Override
     public void displayDetails() {
         System.out.println("Task: " + title + " [" + (completed ? "Completed" : "Pending") + "]");
+        if (priority != null) System.out.println("  Priority: " + priority);
+        if (flag != null) System.out.println("  Flag: " + flag);
+        if (!tags.isEmpty()) System.out.println("  Tags: " + String.join(", ", tags));
     }
 
     @Override
     public int getTaskCount() {
-        return 1;  // A leaf is just one task
+        return 1;
+    }
+
+    @Override
+    public void addTag(String tag) {
+        if (!tags.contains(tag)) {
+            tags.add(tag);
+        }
+    }
+
+    @Override
+    public void removeTag(String tag) {
+        tags.remove(tag);
     }
 }
