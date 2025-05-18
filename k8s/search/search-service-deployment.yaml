@@ -19,19 +19,5 @@ spec:
           ports:
             - containerPort: 8082
           env:
-            # Activate the k8s profile if you have one
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
-            # If your search-service still needs MongoDB, uncomment these:
-            #- name: SPRING_DATA_MONGODB_URI
-            #  valueFrom:
-            #    secretKeyRef:
-            #      name: mongo-secret
-            #      key: URI
-            #- name: SPRING_DATA_MONGODB_DATABASE
-            #  value: search_db
-            # If it uses Redis for sessions, uncomment:
-            #- name: SPRING_REDIS_HOST
-            #  value: redis
-            #- name: SPRING_REDIS_PORT
-            #  value: "6379"

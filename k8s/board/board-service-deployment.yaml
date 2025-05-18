@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: board-service
-          image: omaarrwaell/board-service:1.0      # ← use your actual image:tag
+          image: omaarrwaell/board-service:1.0
           ports:
             - containerPort: 8084
           env:
@@ -24,19 +24,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mongo-secret
-                  key: URI
+                  key: BOARD_DB_URI
             - name: SPRING_DATA_MONGODB_DATABASE
               value: board_db
             - name: SPRING_RABBITMQ_HOST
-              value: rabbitmq
-            - name: SPRING_RABBITMQ_PORT
-              value: "5672"
-            - name: SPRING_RABBITMQ_USERNAME
+              value: rabbitmq-service
+            - name: RABBITMQ_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: rabbitmq-secret
                   key: RABBITMQ_DEFAULT_USER
-            - name: SPRING_RABBITMQ_PASSWORD
+            - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: rabbitmq-secret

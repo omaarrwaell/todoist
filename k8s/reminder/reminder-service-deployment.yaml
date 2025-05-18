@@ -17,7 +17,7 @@ spec:
           image: omaarrwaell/reminder-service:1.0
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - containerPort: 8083
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
@@ -25,20 +25,16 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mongo-secret
-                  key: URI
-            - name: SPRING_DATA_MONGODB_DATABASE
-              value: notification_db
-            - name: SPRING_RABBITMQ_HOST
-              value: rabbitmq
-            - name: SPRING_RABBITMQ_PORT
-              value: "5672"
-            - name: SPRING_RABBITMQ_USERNAME
+                  key: REMINDER_DB_URI
+            - name: RABBITMQ_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: rabbitmq-secret
                   key: RABBITMQ_DEFAULT_USER
-            - name: SPRING_RABBITMQ_PASSWORD
+            - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: rabbitmq-secret
                   key: RABBITMQ_DEFAULT_PASS
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq-service

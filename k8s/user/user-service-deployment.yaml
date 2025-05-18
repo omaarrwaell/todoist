@@ -14,7 +14,6 @@ spec:
     spec:
       containers:
         - name: user-service
-          # replace with your Docker Hub image for the user service
           image: omaarrwaell/user-service:1.0
           imagePullPolicy: Always
           ports:
@@ -23,14 +22,18 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres:5432/user_db
-            - name: SPRING_DATASOURCE_USERNAME
+              value: jdbc:postgresql://postgres-service:5432/user_db
+            - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_USER
-            - name: SPRING_DATASOURCE_PASSWORD
+            - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_PASSWORD
+            - name: SPRING_DATA_REDIS_HOST
+              value: redis-service
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
