@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated; // For validating re
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -98,25 +99,43 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logoutUser(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader
-            /* HttpServletRequest request - if managing sessions directly */) {
+    public ResponseEntity<Map<String, String>> logoutUser(
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
         log.info("Received logout request");
-        // Extract user identifier or token from request/security context
-        // For simplicity, assuming a conceptual user ID might be available
-        // UUID currentUserId = ... // This would come from the security context
 
-        // userService.logoutUser(currentUserId); // Call service method (which is conceptual for now)
+        // Validate authorization header
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            log.warn("Invalid or missing Authorization header");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Invalid or missing Authorization header"));
+        }
 
-        // Client should clear its token/session
-        return ResponseEntity.ok("Logged out successfully. Please clear any local tokens/sessions.");
+        try {
+            // Extract token (remove "Bearer " prefix)
+            String token = authorizationHeader.substring(7);
+
+            // Attempt to logout
+            userService.logoutUser(token);
+
+            return ResponseEntity.ok()
+                    .body(Map.of("message", "Successfully logged out"));
+
+        } catch (Exception e) {
+            log.warn("Logout failed: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
+
 
     @PostMapping("/password-reset/request")
     public ResponseEntity<String> requestPasswordReset(
             @RequestParam @NotBlank @jakarta.validation.constraints.Email String email) {
         String token = userService.requestPasswordReset(email);
-        return ResponseEntity.ok("Password reset initiated.");
+        return ResponseEntity.ok("Password reset token has been sent to your email: " + token);
+
     }
 
     @PostMapping("/password-reset/confirm")

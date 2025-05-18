@@ -213,8 +213,22 @@ public class UserService {
         return redisTemplate.hasKey(token);
     }
 
+    @Transactional
     public void logoutUser(String token) {
+        log.info("Attempting to logout user with token");
+        if (token == null || token.trim().isEmpty()) {
+            log.error("Logout failed: Token is null or empty");
+            throw new AuthenticationFailedException("Token cannot be null or empty");
+        }
+
+        Boolean hasKey = redisTemplate.hasKey(token);
+        if (!hasKey) {
+            log.warn("Logout failed: Invalid or already logged-out token");
+            throw new AuthenticationFailedException("Invalid or already logged-out token");
+        }
+
         redisTemplate.delete(token);
+        log.info("User logged out successfully");
     }
 
     @Transactional
