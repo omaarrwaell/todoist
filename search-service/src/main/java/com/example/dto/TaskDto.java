@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 @Getter
 @Setter
 @ToString
@@ -16,7 +18,7 @@ public class TaskDto {
     private String title;
     private String description;
     private String priority;
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
     private String assignedUserId;
 
     // Getters and setters (or use Lombok)

@@ -6,7 +6,7 @@ import com.example.dto.TaskDto;
 
 import java.util.List;
 
-@FeignClient(name = "task-service")
+@FeignClient(name = "task-service", url = "http://localhost:8081")
 public interface TaskServiceClient {
     @GetMapping("/api/tasks")
     List<TaskDto> getAllTasks();

@@ -89,21 +89,12 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> loginUser(
+    public ResponseEntity<String> loginUser(
             @RequestParam @NotBlank String username,
             @RequestParam @NotBlank String password) {
         log.info("Received login request for username: {}", username);
-        User loggedInUser = userService.loginUser(username, password);
-
-        // Conceptual: If using tokens, you'd create a token here (or get it from a service)
-        // String token = generateJwtToken(loggedInUser.getUsername(), loggedInUser.getRole());
-        // HttpHeaders headers = new HttpHeaders();
-        // headers.add("Authorization", "Bearer " + token);
-        // return new ResponseEntity<>(loggedInUser, headers, HttpStatus.OK);
-
-        // For now, just returning the user (sensitive, as it includes passwordHash)
-        // Ideally, map to a UserResponseDTO without sensitive data.
-        return ResponseEntity.ok(loggedInUser);
+        String token = userService.loginUser(username, password);
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/logout")
@@ -122,12 +113,10 @@ public class UserController {
     }
 
     @PostMapping("/password-reset/request")
-    public ResponseEntity<String> requestPasswordReset(@RequestParam @NotBlank @jakarta.validation.constraints.Email String email) {
-        log.info("Received password reset request for email: {}", email);
+    public ResponseEntity<String> requestPasswordReset(
+            @RequestParam @NotBlank @jakarta.validation.constraints.Email String email) {
         String token = userService.requestPasswordReset(email);
-        // In a real app, you wouldn't return the token directly in the response.
-        // An email would be sent. This is for simulation.
-        return ResponseEntity.ok("Password reset initiated. If your email is registered, you will receive a reset link. (Simulated token: " + token + ")");
+        return ResponseEntity.ok("Password reset initiated.");
     }
 
     @PostMapping("/password-reset/confirm")
