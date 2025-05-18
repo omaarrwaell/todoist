@@ -21,8 +21,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class UserService {
+    private final StringRedisTemplate redisTemplate;
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
@@ -31,9 +35,10 @@ public class UserService {
     private static final long PASSWORD_RESET_TOKEN_VALIDITY_MINUTES = 60;
 
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, StringRedisTemplate redisTemplate) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.redisTemplate = redisTemplate;
     }
 
     @Transactional(readOnly = true)
@@ -185,34 +190,45 @@ public class UserService {
         log.info("User deleted successfully with id: {}", id);
     }
 
-    @Transactional(readOnly = true)
-    public User loginUser(String username, String plainPassword) {
+    @Transactional
+    public String loginUser(String username, String plainPassword) {
         log.info("Attempting login for user: {}", username);
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> {
-                    log.warn("Login failed: User not found - {}", username);
-                    return new AuthenticationFailedException("Invalid username or password.");
-                });
-
-        if (!user.isActive()) {
-            log.warn("Login failed: User account is not active - {}", username);
-            throw new AuthenticationFailedException("User account is not active.");
-        }
+                .orElseThrow(() -> new AuthenticationFailedException("Invalid username or password."));
 
         if (!passwordEncoder.matches(plainPassword, user.getPasswordHash())) {
-            log.warn("Login failed: Invalid password for user - {}", username);
-            // Consider rate limiting or account locking after multiple failed attempts
             throw new AuthenticationFailedException("Invalid username or password.");
         }
 
-        log.info("User {} logged in successfully", username);
+        // Generate token and store in Redis
+        String token = UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set(token, username, 1, TimeUnit.HOURS); // Token expires in 1 hour
 
-        return user;
+        log.info("User {} logged in successfully with token: {}", username, token);
+        return token;
     }
 
-    public void logoutUser(UUID userId /* or session/token to invalidate */) {
-        log.info("User {} logging out", userId);
 
+    public boolean validateToken(String token) {
+        return redisTemplate.hasKey(token);
+    }
+
+    @Transactional
+    public void logoutUser(String token) {
+        log.info("Attempting to logout user with token");
+        if (token == null || token.trim().isEmpty()) {
+            log.error("Logout failed: Token is null or empty");
+            throw new AuthenticationFailedException("Token cannot be null or empty");
+        }
+
+        Boolean hasKey = redisTemplate.hasKey(token);
+        if (!hasKey) {
+            log.warn("Logout failed: Invalid or already logged-out token");
+            throw new AuthenticationFailedException("Invalid or already logged-out token");
+        }
+
+        redisTemplate.delete(token);
+        log.info("User logged out successfully");
     }
 
     @Transactional
@@ -268,5 +284,13 @@ public class UserService {
             return List.of(); // Or return all users, depending on desired behavior
         }
         return userRepository.searchUsers(searchTerm.trim());
+    }
+
+    public String getUsernameFromToken(String token) {
+        String username = redisTemplate.opsForValue().get(token);
+        if (username == null) {
+            throw new AuthenticationFailedException("Invalid token.");
+        }
+        return username;
     }
 }
