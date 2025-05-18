@@ -19,7 +19,8 @@ public class SearchContext {
     }
 
     public List<TaskDto> apply(String strategyKey, List<TaskDto> tasks, String param) {
-        SearchStrategy strategy = strategies.get(strategyKey.toLowerCase());
+        SearchStrategy strategy = strategies.get(strategyKey);
+       System.out.println(strategies.values().stream().map(Object::getClass).toList());
         if (strategy == null) throw new IllegalArgumentException("Invalid strategy: " + strategyKey);
         return strategy.execute(tasks, param);
     }

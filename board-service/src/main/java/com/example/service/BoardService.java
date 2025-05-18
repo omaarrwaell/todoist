@@ -46,14 +46,22 @@ public class BoardService implements BoardSubject {
 
     // Create
     public Board createBoard(Board boardRequest) {
-        Board board = new BoardBuilder()
+        BoardBuilder b = new BoardBuilder()
                 .setName(boardRequest.getName())
-                .setCategory(boardRequest.getCategory())
-                .setAdmin(boardRequest.getAdminUserId())
-                .addUser(boardRequest.getAdminUserId(), Role.ADMIN)
-                .build();
+                .setCategory(boardRequest.getCategory());
 
-        return boardRepository.save(board);
+        if (boardRequest.getAdminUserId() != null) {
+            b.setAdmin(boardRequest.getAdminUserId())
+                    .addUser(boardRequest.getAdminUserId(), Role.ADMIN);
+        }
+
+        // now copy across any other roles the client provided:
+        boardRequest.getUserRoles().forEach((userId, roleStr) -> {
+            Role r = Role.valueOf(String.valueOf(roleStr));
+            b.addUser(userId, r);
+        });
+
+        return boardRepository.save(b.build());
     }
 
     // Read all

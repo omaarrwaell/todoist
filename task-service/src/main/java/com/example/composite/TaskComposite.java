@@ -4,15 +4,18 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Composite node in the Composite pattern - represents a task that contains subtasks
- */
 @Data
 public class TaskComposite implements TaskComponent {
     private String id;
     private String title;
     private String description;
     private boolean completed;
+
+    // Feature-specific fields
+    private List<String> tags = new ArrayList<>();
+    private String priority;
+    private String flag;
+    private String assignedUserId;
     private List<TaskComponent> subTasks = new ArrayList<>();
 
     public TaskComposite(String id, String title) {
@@ -25,18 +28,13 @@ public class TaskComposite implements TaskComponent {
     public void markComplete() {
         this.completed = true;
 
-        // When a parent task is completed, all subtasks should be completed too
         for (TaskComponent task : subTasks) {
             task.markComplete();
         }
-
-        System.out.println("Task '" + title + "' and all subtasks marked as complete");
     }
 
     @Override
     public boolean isComplete() {
-        // A composite task is complete if it's marked as complete
-        // Alternative approach: could check if all subtasks are complete
         return completed;
     }
 
@@ -66,23 +64,65 @@ public class TaskComposite implements TaskComponent {
     @Override
     public void displayDetails() {
         System.out.println("Task Group: " + title + " [" + (completed ? "Completed" : "Pending") + "]");
-        System.out.println("Subtasks:");
+        if (priority != null) System.out.println("  Priority: " + priority);
+        if (flag != null) System.out.println("  Flag: " + flag);
+        if (!tags.isEmpty()) System.out.println("  Tags: " + String.join(", ", tags));
 
+        System.out.println("Subtasks:");
         for (TaskComponent task : subTasks) {
-            System.out.print("  - ");  // Indentation for hierarchy
+            System.out.print("  - ");
             task.displayDetails();
         }
     }
 
     @Override
     public int getTaskCount() {
-        int count = 1;  // Count this task
+        int count = 1;
 
-        // Add the count of all subtasks
         for (TaskComponent task : subTasks) {
             count += task.getTaskCount();
         }
 
         return count;
     }
+
+    @Override
+    public void addTag(String tag) {
+        if (!tags.contains(tag)) {
+            tags.add(tag);
+        }
+    }
+
+    @Override
+    public void removeTag(String tag) {
+        tags.remove(tag);
+    }
+
+    @Override
+    public void assignToUser(String userId) {
+        this.assignedUserId = userId;
+        for (TaskComponent subtask : subTasks) {
+            subtask.assignToUser(userId);
+        }
+
+    }
+
+    public boolean hasSubtasks() {
+        return !subTasks.isEmpty();
+    }
+
+    public void propagatePriority(String priority) {
+        this.priority = priority;
+        for (TaskComponent subtask : subTasks) {
+            subtask.setPriority(priority);
+        }
+    }
+
+    public void propagateFlag(String flag) {
+        this.flag = flag;
+        for (TaskComponent subtask : subTasks) {
+            subtask.setFlag(flag);
+        }
+    }
+
 }
