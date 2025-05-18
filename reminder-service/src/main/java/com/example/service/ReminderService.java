@@ -1,10 +1,15 @@
 package com.example.service;
 
+import com.example.client.UserClient;
+import com.example.dto.UserDto;
 import com.example.model.Reminder;
 import com.example.repository.ReminderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +19,8 @@ import java.util.List;
 public class ReminderService {
 
     private final ReminderRepository reminderRepository;
+    private final UserClient userClient;
+    private final NotificationService notificationService;
 
     public void createReminder(Reminder reminder) {
         reminder.setStatus("PENDING"); // ensure status is always correct
@@ -27,27 +34,20 @@ public class ReminderService {
                 .findByReminderTimeBeforeAndStatus(LocalDateTime.now(), "PENDING");
 
         for (Reminder reminder : dueReminders) {
-            // For now, simulate sending
-            System.out.println("Sending reminder: " + reminder.getTitle());
-            switch (reminder.getPriority()) {
-                case "HIGH" -> {
-                    System.out.println("High");
-                }
-                case "MEDIUM" -> {
-                    System.out.println("Medium");
-                }
-                case "LOW" -> {
-                    System.out.println("Low");
-                }
-                default -> {
+            // Fetch user email
+            UserDto user = userClient.getUser(reminder.getUserId());
 
-                }
-                // maybe send early or multiple times (future extension)
-            }
+            // Compose your message
+            String message = "Reminder: " + reminder.getTitle() + "\n" + reminder.getDescription();
+
+            // Send email notification
+            notificationService.notify("Email", user.getEmail(), message);
 
             // Mark as sent
             reminder.setStatus("SENT");
             reminderRepository.save(reminder);
         }
+
     }
+
 }
