@@ -4,7 +4,7 @@ import com.example.dto.TaskDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "task-service")
+@FeignClient(name = "task-service" , url = "http://localhost:8081")
 public interface TaskClient {
 
     @GetMapping("/api/tasks/{taskId}")

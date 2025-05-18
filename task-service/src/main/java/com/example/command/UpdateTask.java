@@ -4,7 +4,7 @@ import com.example.composite.TaskComponent;
 import com.example.composite.TaskLeaf;
 import com.example.models.Task;
 import com.example.services.TaskService;
-import com.example.adapter.TaskAdapter;
+import com.example.composite.TaskAdapter;
 
 public class UpdateTask implements Command {
     private final TaskService taskService;

@@ -15,7 +15,7 @@ public class TaskComposite implements TaskComponent {
     private List<String> tags = new ArrayList<>();
     private String priority;
     private String flag;
-
+    private String assignedUserId;
     private List<TaskComponent> subTasks = new ArrayList<>();
 
     public TaskComposite(String id, String title) {
@@ -98,6 +98,15 @@ public class TaskComposite implements TaskComponent {
         tags.remove(tag);
     }
 
+    @Override
+    public void assignToUser(String userId) {
+        this.assignedUserId = userId;
+        for (TaskComponent subtask : subTasks) {
+            subtask.assignToUser(userId);
+        }
+
+    }
+
     public boolean hasSubtasks() {
         return !subTasks.isEmpty();
     }
@@ -115,4 +124,5 @@ public class TaskComposite implements TaskComponent {
             subtask.setFlag(flag);
         }
     }
+
 }

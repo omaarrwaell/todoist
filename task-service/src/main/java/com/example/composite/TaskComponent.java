@@ -30,4 +30,6 @@ public interface TaskComponent {
 
     String getFlag();
     void setFlag(String flag);
+
+    void assignToUser(String userId);
 }

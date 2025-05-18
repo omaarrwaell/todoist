@@ -5,7 +5,7 @@ import com.example.composite.TaskLeaf;
 import com.example.composite.TaskComposite;
 import com.example.models.Task;
 import com.example.services.TaskService;
-import com.example.adapter.TaskAdapter;
+import com.example.composite.TaskAdapter;
 
 import java.util.ArrayList;
 import java.util.List;

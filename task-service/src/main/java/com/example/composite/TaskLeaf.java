@@ -16,6 +16,7 @@ public class TaskLeaf implements TaskComponent {
     private List<String> tags = new ArrayList<>();
     private String priority;
     private String flag;
+    private String assignedUserId;
 
     public TaskLeaf(String id, String title) {
         this.id = id;
@@ -76,5 +77,14 @@ public class TaskLeaf implements TaskComponent {
     @Override
     public void removeTag(String tag) {
         tags.remove(tag);
+    }
+
+    @Override
+    public void assignToUser(String userId) {
+        this.assignedUserId = userId;
+
+
+
+
     }
 }

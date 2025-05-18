@@ -1,4 +1,4 @@
-package com.example.adapter;
+package com.example.composite;
 
 import com.example.composite.TaskComponent;
 import com.example.composite.TaskComposite;

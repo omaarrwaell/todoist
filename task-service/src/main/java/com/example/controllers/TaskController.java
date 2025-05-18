@@ -101,6 +101,18 @@ public class TaskController {
 
         return ResponseEntity.noContent().build();
     }
+    @PutMapping("/{id}/assign")
+    public ResponseEntity<Void> assignTask(
+            @PathVariable String id,
+            @RequestParam String userId) {
+
+        // Direct service call instead of using a command
+        TaskComponent component = taskService.getTaskAsComponent(id);
+        component.assignToUser(userId);
+        taskService.updateTaskComponent(component);
+
+        return ResponseEntity.noContent().build();
+    }
 
     // Modified: No Command pattern for setPriority
     @PatchMapping("/{id}/priority")

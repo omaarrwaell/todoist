@@ -1,6 +1,6 @@
 package com.example.services;
 
-import com.example.adapter.TaskAdapter;
+import com.example.composite.TaskAdapter;
 import com.example.composite.TaskComponent;
 import com.example.composite.TaskComposite;
 import com.example.composite.TaskLeaf;
@@ -127,12 +127,14 @@ public class TaskService {
             task.setTags(leaf.getTags());
             task.setPriority(leaf.getPriority());
             task.setFlag(leaf.getFlag());
+            task.setAssignedUserId(leaf.getAssignedUserId());
         } else if (component instanceof TaskComposite) {
             TaskComposite composite = (TaskComposite) component;
             task.setDescription(composite.getDescription());
             task.setTags(composite.getTags());
             task.setPriority(composite.getPriority());
             task.setFlag(composite.getFlag());
+            task.setAssignedUserId(composite.getAssignedUserId());
 
             // Update children list
             List<String> childrenIds = composite.getSubTasks().stream()
