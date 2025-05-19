@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.model.Reminder;
 import com.example.repository.ReminderRepository;
+import com.example.service.ReminderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,10 +14,11 @@ import java.util.List;
 public class ReminderController {
 
     private final ReminderRepository reminderRepository;
+    private final ReminderService reminderService;
 
     @PostMapping
     public Reminder create(@RequestBody Reminder reminder) {
-        return reminderRepository.save(reminder);
+        return reminderService.createReminder(reminder);
     }
 
     @GetMapping
