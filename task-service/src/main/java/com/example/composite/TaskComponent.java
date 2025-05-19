@@ -1,5 +1,7 @@
 package com.example.composite;
 
+import com.example.models.TaskFlag;
+
 import java.util.List;
 
 public interface TaskComponent {
@@ -28,8 +30,15 @@ public interface TaskComponent {
     String getPriority();
     void setPriority(String priority);
 
-    String getFlag();
-    void setFlag(String flag);
+//    String getFlag();
+//    void setFlag(String flag);
 
     void assignToUser(String userId);
+
+String getAssignedUserId();
+
+    // Flag methods - enum version for type safety
+    TaskFlag getFlag();
+    void setFlag(TaskFlag flag);
+
 }

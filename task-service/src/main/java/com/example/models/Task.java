@@ -20,16 +20,11 @@ public class Task {
     private String id;
 
     private String title;
-
     private String description;
-
     private String status;
-
     private String assignedUserId;
-
     private String boardId;
-
-    private List<String> tags = new ArrayList<>();
+    private List<String> tags;
 
     @CreatedDate
     private Date createdAt;
@@ -38,16 +33,22 @@ public class Task {
     private Date updatedAt;
 
     private Date dueDate;
-
     private String priority;
 
-    private String flag;
+    // Change to TaskFlag enum
+    private TaskFlag flag = TaskFlag.NONE;
 
-    private String parentId;  // Null if it's a top-level task
-
-    private List<String> childrenIds = new ArrayList<>();
-
-    private boolean isSubtask;  // To distinguish between tasks and subtasks
-
+    private String parentId;
+    private List<String> childrenIds;
+    private boolean isSubtask;
     private boolean completed;
+
+    // Helper methods for MongoDB compatibility if needed
+    public String getFlagAsString() {
+        return flag != null ? flag.name() : null;
+    }
+
+    public void setFlagFromString(String flagString) {
+        this.flag = TaskFlag.fromString(flagString);
+    }
 }
