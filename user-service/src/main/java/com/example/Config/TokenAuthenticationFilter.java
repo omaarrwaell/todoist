@@ -1,10 +1,12 @@
 package com.example.Config;
 
-import com.example.Service.UserService; // Ensure this import is present
+import com.example.Service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -12,6 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(TokenAuthenticationFilter.class);
 
     private final UserService userService;
 
@@ -28,12 +32,20 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             String token = authorizationHeader.substring(7);
 
             if (userService.validateToken(token)) {
-                String username = userService.getUsernameFromToken(token); // Ensure this method exists in UserService
+                try {
+                    String username = userService.getUsernameFromToken(token);
 
-                TokenAuthentication authentication = new TokenAuthentication(username, token);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    TokenAuthentication authentication = new TokenAuthentication(username, token);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } catch (Exception e) {
+                    log.warn("Token validation failed: {}", e.getMessage());
+                }
+            } else {
+                log.warn("Invalid or expired token: {}", token);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
         }
 

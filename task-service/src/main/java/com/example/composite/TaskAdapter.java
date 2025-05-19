@@ -43,6 +43,9 @@ public class TaskAdapter {
             ((TaskLeaf)component).setTags(task.getTags() != null ? task.getTags() : new ArrayList<>());
             ((TaskLeaf)component).setPriority(task.getPriority());
             ((TaskLeaf)component).setFlag(task.getFlag());
+            ((TaskLeaf)component).setDueDate(task.getDueDate());
+
+
         } else {
             // Create a composite task
             component = new TaskComposite(task.getId(), task.getTitle());
@@ -56,6 +59,8 @@ public class TaskAdapter {
             ((TaskComposite)component).setTags(task.getTags() != null ? task.getTags() : new ArrayList<>());
             ((TaskComposite)component).setPriority(task.getPriority());
             ((TaskComposite)component).setFlag(task.getFlag());
+            ((TaskComposite)component).setDueDate(task.getDueDate());
+
 
             // Recursively add children
             for (String childId : task.getChildrenIds()) {

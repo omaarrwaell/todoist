@@ -5,6 +5,7 @@ import com.example.composite.TaskComponent;
 import com.example.composite.TaskComposite;
 import com.example.composite.TaskLeaf;
 import com.example.models.Task;
+import com.example.models.TaskFlag;
 import com.example.repositories.TaskRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,8 @@ public class TaskService {
     /**
      * Create a new task from a TaskLeaf component
      */
+
+
     public TaskLeaf createTask(TaskLeaf taskLeaf) {
         // Convert the TaskLeaf to a database Task
         Task task = new Task();
@@ -58,16 +61,69 @@ public class TaskService {
         return taskLeaf;
     }
 
+    @Transactional
+    public TaskComponent assignDueDate(String taskId, Date dueDate, boolean propagate) {
+        TaskComponent component = getTaskAsComponent(taskId);
+
+        // Set due date on the component using reflection (since it's not in the interface)
+        if (component instanceof TaskLeaf) {
+            TaskLeaf leaf = (TaskLeaf) component;
+            leaf.setDueDate(dueDate);
+        } else if (component instanceof TaskComposite) {
+            TaskComposite composite = (TaskComposite) component;
+            composite.setDueDate(dueDate);
+
+            if (propagate) {
+                propagateDueDate(composite, dueDate);
+            }
+        }
+
+        // Update the component in the database
+        updateTaskComponent(component);
+
+        // Return the updated component
+        return getTaskAsComponent(taskId);
+    }
+
     /**
-     * Create a subtask (TaskLeaf) for a parent task
+     * Helper method to propagate due date to all subtasks recursively
      */
-    /**
-     * Create a subtask (TaskLeaf) for a parent task
-     */
+    private void propagateDueDate(TaskComposite composite, Date dueDate) {
+        for (TaskComponent child : composite.getSubTasks()) {
+            // Set due date on the child
+            if (child instanceof TaskLeaf) {
+                ((TaskLeaf) child).setDueDate(dueDate);
+            } else if (child instanceof TaskComposite) {
+                TaskComposite childComposite = (TaskComposite) child;
+                childComposite.setDueDate(dueDate);
+                // Recursively propagate to this child's subtasks
+                propagateDueDate(childComposite, dueDate);
+            }
+        }
+    }
+
     @Transactional
     public TaskLeaf createSubtask(String parentId, TaskLeaf subtaskLeaf) {
-        // Get parent task
         Task parentTask = getTaskById(parentId);
+        TaskComponent parentComponent = getTaskAsComponent(parentId);
+
+
+        if (subtaskLeaf.getTags() == null || subtaskLeaf.getTags().isEmpty()) {
+            subtaskLeaf.setTags(new ArrayList<>(parentComponent.getTags()));
+        }
+
+        if (subtaskLeaf.getPriority() == null) {
+            subtaskLeaf.setPriority(parentComponent.getPriority());
+        }
+
+        if (subtaskLeaf.getFlag() == null) {
+            subtaskLeaf.setFlag(parentComponent.getFlag());
+        }
+
+        // Inherit assigned user - ensure this gets transferred
+        if (parentComponent.getAssignedUserId() != null) {
+            subtaskLeaf.assignToUser(parentComponent.getAssignedUserId());
+        }
 
         // Convert subtask to database entity
         Task subtask = new Task();
@@ -77,10 +133,17 @@ public class TaskService {
         subtask.setTags(subtaskLeaf.getTags());
         subtask.setPriority(subtaskLeaf.getPriority());
         subtask.setFlag(subtaskLeaf.getFlag());
+
+        // Set the assignedUserId from the leaf
+        subtask.setAssignedUserId(subtaskLeaf.getAssignedUserId());
+
         subtask.setCreatedAt(new Date());
         subtask.setUpdatedAt(new Date());
         subtask.setParentId(parentId);
+
+        // Ensure subtask is marked as a subtask
         subtask.setSubtask(true);
+
         subtask.setChildrenIds(new ArrayList<>());
 
         // Save subtask
@@ -128,6 +191,7 @@ public class TaskService {
             task.setPriority(leaf.getPriority());
             task.setFlag(leaf.getFlag());
             task.setAssignedUserId(leaf.getAssignedUserId());
+            task.setDueDate(leaf.getDueDate());
         } else if (component instanceof TaskComposite) {
             TaskComposite composite = (TaskComposite) component;
             task.setDescription(composite.getDescription());
@@ -135,6 +199,7 @@ public class TaskService {
             task.setPriority(composite.getPriority());
             task.setFlag(composite.getFlag());
             task.setAssignedUserId(composite.getAssignedUserId());
+            task.setDueDate(composite.getDueDate());
 
             // Update children list
             List<String> childrenIds = composite.getSubTasks().stream()
@@ -255,18 +320,18 @@ public class TaskService {
     /**
      * Feature 3: Assign a task to a flag
      */
+    /**
+     * Feature 3: Assign a task to a flag
+     */
     @Transactional
-    public void assignTaskToFlag(String id, String flag, boolean propagate) {
+    public void assignTaskToFlag(String id, TaskFlag flag, boolean propagate) {
         if (propagate) {
             // Use the composite pattern for propagation
             TaskComponent component = getTaskAsComponent(id);
             if (component instanceof TaskComposite) {
                 TaskComposite composite = (TaskComposite) component;
                 // Set flag for parent and all children
-                composite.setFlag(flag);
-                for (TaskComponent child : composite.getSubTasks()) {
-                    child.setFlag(flag);
-                }
+                composite.propagateFlag(flag);
                 updateTaskComponent(composite);
             } else {
                 // It's a leaf, just update it
@@ -281,7 +346,57 @@ public class TaskService {
             taskRepository.save(task);
         }
     }
+    /**
+     * Add a tag to a task and all its subtasks using the Composite pattern
+     */
+    @Transactional
+    public void addTagToTaskAndChildren(String taskId, String tag) {
+        // Get the task as a composite component
+        TaskComponent component = getTaskAsComponent(taskId);
 
+        // Use the composite pattern to add the tag to this component and all children
+        addTagToComponentHierarchy(component, tag);
+
+        // Save the changes back to the database
+        updateTaskComponent(component);
+    }
+
+
+    private void addTagToComponentHierarchy(TaskComponent component, String tag) {
+        // Add the tag to this component
+        component.addTag(tag);
+
+        // If this is a composite, add the tag to all children
+        if (component instanceof TaskComposite) {
+            for (TaskComponent child : component.getSubTasks()) {
+                addTagToComponentHierarchy(child, tag);
+            }
+        }
+    }
+    /**
+     * Remove a tag from a task and all its subtasks using the Composite pattern
+     */
+    @Transactional
+    public void removeTagFromTaskAndChildren(String taskId, String tag) {
+        TaskComponent component = getTaskAsComponent(taskId);
+
+        removeTagFromComponentHierarchy(component, tag);
+
+        updateTaskComponent(component);
+    }
+
+
+    private void removeTagFromComponentHierarchy(TaskComponent component, String tag) {
+        // Remove the tag from this component
+        component.removeTag(tag);
+
+        // If this is a composite, remove the tag from all children
+        if (component instanceof TaskComposite) {
+            for (TaskComponent child : component.getSubTasks()) {
+                removeTagFromComponentHierarchy(child, tag);
+            }
+        }
+    }
     /**
      * Feature 4: Sort tasks by date
      */

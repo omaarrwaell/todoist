@@ -1,8 +1,10 @@
 package com.example.composite;
 
+import com.example.models.TaskFlag;
 import lombok.Data;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -12,17 +14,21 @@ public class TaskLeaf implements TaskComponent {
     private String description;
     private boolean completed;
 
+
     // Feature-specific fields
     private List<String> tags = new ArrayList<>();
     private String priority;
-    private String flag;
+
     private String assignedUserId;
+    private TaskFlag flag = TaskFlag.NONE;
 
     public TaskLeaf(String id, String title) {
         this.id = id;
         this.title = title;
         this.completed = false;
     }
+
+
 
     @Override
     public void markComplete() {
@@ -87,4 +93,30 @@ public class TaskLeaf implements TaskComponent {
 
 
     }
+
+    @Override
+    public String getAssignedUserId() {
+        return this.assignedUserId;
+    }
+    @Override
+    public TaskFlag getFlag() {
+        return flag;
+    }
+
+
+    @Override
+    public void setFlag(TaskFlag flag) {
+        this.flag = flag;
+    }
+
+    private Date dueDate;
+
+    public Date getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
+
 }
