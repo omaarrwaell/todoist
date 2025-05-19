@@ -28,7 +28,7 @@ spec:
             - name: SPRING_DATA_MONGODB_DATABASE
               value: board_db
             - name: SPRING_RABBITMQ_HOST
-              value: rabbitmq-service
+              value: rabbitmq
             - name: RABBITMQ_USERNAME
               valueFrom:
                 secretKeyRef:

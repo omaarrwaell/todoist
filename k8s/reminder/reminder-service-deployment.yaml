@@ -37,4 +37,4 @@ spec:
                   name: rabbitmq-secret
                   key: RABBITMQ_DEFAULT_PASS
             - name: SPRING_RABBITMQ_HOST
-              value: rabbitmq-service
+              value: rabbitmq

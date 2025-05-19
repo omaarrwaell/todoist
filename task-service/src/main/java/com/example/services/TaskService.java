@@ -7,6 +7,8 @@ import com.example.composite.TaskLeaf;
 import com.example.models.Task;
 import com.example.models.TaskFlag;
 import com.example.repositories.TaskRepository;
+import com.example.dto.ReminderMessage;
+import com.example.service.RabbitMQProducer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,11 +24,13 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskAdapter taskAdapter;
+    private final RabbitMQProducer rabbitMQProducer;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository, TaskAdapter taskAdapter) {
+    public TaskService(TaskRepository taskRepository, TaskAdapter taskAdapter, RabbitMQProducer rabbitMQProducer) {
         this.taskRepository = taskRepository;
         this.taskAdapter = taskAdapter;
+        this.rabbitMQProducer = rabbitMQProducer;
     }
 
     //----------------------
@@ -179,6 +183,7 @@ public class TaskService {
         }
 
         Task task = getTaskById(component.getId());
+        String previousAssignedUserId = task.getAssignedUserId();
 
         // Update basic properties
         task.setTitle(component.getTitle());
@@ -214,7 +219,19 @@ public class TaskService {
         }
 
         task.setUpdatedAt(new Date());
-        taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+
+        // Send notification to reminder service if task has an assigned user
+        if (savedTask.getAssignedUserId() != null && savedTask.getDueDate() != null) {
+            ReminderMessage reminderMessage = new ReminderMessage(
+                savedTask.getId(),
+                savedTask.getAssignedUserId(),
+                savedTask.getTitle(),
+                savedTask.getDueDate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime(),
+                savedTask.getDescription()
+            );
+            rabbitMQProducer.sendTaskReminder(reminderMessage);
+        }
 
         return component;
     }
@@ -254,6 +271,18 @@ public class TaskService {
     @Transactional
     public void deleteTask(String id) {
         Task task = getTaskById(id);
+
+        // If the task has an assigned user and due date, send a deletion message
+        if (task.getAssignedUserId() != null && task.getDueDate() != null) {
+            ReminderMessage reminderMessage = new ReminderMessage(
+                task.getId(),
+                task.getAssignedUserId(),
+                task.getTitle(),
+                task.getDueDate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime(),
+                "Task deleted: " + task.getDescription()
+            );
+            rabbitMQProducer.sendTaskReminder(reminderMessage);
+        }
 
         // First, remove this task from its parent
         if (task.getParentId() != null) {
