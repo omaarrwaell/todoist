@@ -17,7 +17,7 @@ spec:
           image: omaarrwaell/task-service:1.0
           imagePullPolicy: Always
           ports:
-            - containerPort: 8083
+            - containerPort: 8081
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: k8s

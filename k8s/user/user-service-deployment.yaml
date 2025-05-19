@@ -17,12 +17,12 @@ spec:
           image: omaarrwaell/user-service:1.0
           imagePullPolicy: Always
           ports:
-            - containerPort: 8081
+            - containerPort: 8080
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-service:5432/user_db
+              value: jdbc:postgresql://postgres:5432/user_db
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
