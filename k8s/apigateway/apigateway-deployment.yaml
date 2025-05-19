@@ -16,7 +16,7 @@ spec:
         - name: api-gateway
           image: omaarrwaell/api-gateway:1.0
           ports:
-            - containerPort: 8085
+            - containerPort: 8089
           env:
             # activate your k8s profile if you have one
             - name: SPRING_PROFILES_ACTIVE

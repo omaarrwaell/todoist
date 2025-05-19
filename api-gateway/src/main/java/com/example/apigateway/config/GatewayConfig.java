@@ -28,7 +28,7 @@ public class GatewayConfig {
                         .filters(f -> f
                                 .rewritePath("/user/(?<segment>.*)", "/${segment}")
                                 .addRequestHeader("X-Gateway-Token", "22ccd954-7c73-43f7-a5f5-4b303a16f588"))
-                        .uri("http://user-service:8082"))
+                        .uri("http://user-service:8080"))
                 .route("reminder-service", r -> r
                         .path("/reminder/**")
                         .filters(f -> f
