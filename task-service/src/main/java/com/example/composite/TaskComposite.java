@@ -1,7 +1,9 @@
 package com.example.composite;
 
+import com.example.models.TaskFlag;
 import lombok.Data;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -10,11 +12,13 @@ public class TaskComposite implements TaskComponent {
     private String title;
     private String description;
     private boolean completed;
+    private TaskFlag flag = TaskFlag.NONE;
+
 
     // Feature-specific fields
     private List<String> tags = new ArrayList<>();
     private String priority;
-    private String flag;
+   // private String flag;
     private String assignedUserId;
     private List<TaskComponent> subTasks = new ArrayList<>();
 
@@ -65,7 +69,7 @@ public class TaskComposite implements TaskComponent {
     public void displayDetails() {
         System.out.println("Task Group: " + title + " [" + (completed ? "Completed" : "Pending") + "]");
         if (priority != null) System.out.println("  Priority: " + priority);
-        if (flag != null) System.out.println("  Flag: " + flag);
+//        if (flag != null) System.out.println("  Flag: " + flag);
         if (!tags.isEmpty()) System.out.println("  Tags: " + String.join(", ", tags));
 
         System.out.println("Subtasks:");
@@ -107,6 +111,34 @@ public class TaskComposite implements TaskComponent {
 
     }
 
+    @Override
+    public String getAssignedUserId() {
+        return this.assignedUserId;
+    }
+
+    @Override
+    public TaskFlag getFlag() {
+        return flag;
+    }
+
+    @Override
+    public void setFlag(TaskFlag flag) {
+        this.flag = flag;
+    }
+
+    public void propagateFlag(TaskFlag flag) {
+        this.setFlag(flag);
+
+        for (TaskComponent child : subTasks) {
+            if (child instanceof TaskComposite) {
+                ((TaskComposite) child).propagateFlag(flag);
+            } else {
+                child.setFlag(flag);
+            }
+        }
+    }
+
+
     public boolean hasSubtasks() {
         return !subTasks.isEmpty();
     }
@@ -118,11 +150,14 @@ public class TaskComposite implements TaskComponent {
         }
     }
 
-    public void propagateFlag(String flag) {
-        this.flag = flag;
-        for (TaskComponent subtask : subTasks) {
-            subtask.setFlag(flag);
-        }
+    private Date dueDate;
+
+    public Date getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
     }
 
 }
