@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
+                        .requestMatchers("/api/users/{id}").permitAll()
                         .requestMatchers("/api/users/password-reset/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()

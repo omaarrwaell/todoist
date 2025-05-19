@@ -11,8 +11,8 @@ public class NotificationService {
         this.factory = factory;
     }
 
-    public void notify(String type, String recipient, String messageBody) {
+    public String notify(String type, String recipient, String messageBody) {
         Notification notifier = factory.getNotification(type);
-        notifier.send(recipient, messageBody);
+        return notifier.send(recipient, messageBody);
     }
 }

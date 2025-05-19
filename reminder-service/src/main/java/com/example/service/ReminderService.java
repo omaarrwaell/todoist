@@ -5,6 +5,7 @@ import com.example.dto.UserDto;
 import com.example.model.Reminder;
 import com.example.repository.ReminderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,33 +22,50 @@ public class ReminderService {
     private final ReminderRepository reminderRepository;
     private final UserClient userClient;
     private final NotificationService notificationService;
+    private final NotificationTemplateService templateService;
 
-    public void createReminder(Reminder reminder) {
+    public Reminder createReminder(Reminder reminder) {
         reminder.setStatus("PENDING"); // ensure status is always correct
-        reminderRepository.save(reminder);
+        return reminderRepository.save(reminder);
     }
 
-    // 1. Scheduled job runs every minute
-    @Scheduled(fixedRate = 60000) // Every 60 seconds
-    public void checkAndSendReminders() {
+    @Scheduled(fixedRate = 60000) // Every 1 min
+    public void checkHighPriorityReminders() {
+        sendDueRemindersByPriority("HIGH");
+    }
+
+    @Scheduled(fixedRate = 15 * 60 * 1000) // Every 15 min
+    public void checkMediumPriorityReminders() {
+        sendDueRemindersByPriority("MEDIUM");
+    }
+
+    @Scheduled(fixedRate = 60 * 60 * 1000) // Every 60 min
+    public void checkLowPriorityReminders() {
+        sendDueRemindersByPriority("LOW");
+    }
+
+    private void sendDueRemindersByPriority(String priority) {
         List<Reminder> dueReminders = reminderRepository
-                .findByReminderTimeBeforeAndStatus(LocalDateTime.now(), "PENDING");
+                .findByReminderTimeBeforeAndStatus(LocalDateTime.now(), "PENDING")
+                .stream()
+                .filter(r -> priority.equalsIgnoreCase(r.getPriority()))
+                .toList();
 
         for (Reminder reminder : dueReminders) {
-            // Fetch user email
             UserDto user = userClient.getUser(reminder.getUserId());
+            String title = reminder.getTitle();
+            String description = reminder.getDescription();
 
-            // Compose your message
-            String message = "Reminder: " + reminder.getTitle() + "\n" + reminder.getDescription();
+            String emailMessage = templateService.generateMessage("email", priority, title, description);
+            String pushMessage = templateService.generateMessage("push", priority, title, description);
 
-            // Send email notification
-            notificationService.notify("Email", user.getEmail(), message);
+            notificationService.notify("Email", user.getEmail(), emailMessage);
+            notificationService.notify("push", "no-token-needed", pushMessage);
 
-            // Mark as sent
             reminder.setStatus("SENT");
             reminderRepository.save(reminder);
         }
-
     }
+
 
 }

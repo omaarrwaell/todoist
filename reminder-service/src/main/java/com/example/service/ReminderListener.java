@@ -1,21 +1,30 @@
 package com.example.service;
 
-import com.example.config.RabbitMQConfig;
+import com.example.model.Reminder;
 import com.example.model.Reminder;
 import com.example.repository.ReminderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class ReminderListener {
 
-    private final ReminderService reminderService;
-    // Listener for the task reminder messages from the board-service or task-service
-    @RabbitListener(queues = RabbitMQConfig.REMINDER_QUEUE)
-    public void handleReminderMessage(Reminder reminder) {
-        System.out.println("Received reminder message: " + reminder);
-        reminderService.createReminder(reminder); // Save reminder to DB
+    private final ReminderRepository reminderRepository;
+
+    @RabbitListener(queues = "reminder.queue")
+    public void receiveReminder(Reminder message) {
+        Reminder reminder = new Reminder();
+        reminder.setUserId(message.getUserId());
+        reminder.setTitle(message.getTitle());
+        reminder.setDescription(message.getDescription());
+        reminder.setPriority(message.getPriority());
+        reminder.setReminderTime(message.getReminderTime());
+        reminder.setStatus("PENDING");
+
+        reminderRepository.save(reminder);
+
+        System.out.println("✅ New reminder saved from message: " + message.getTitle());
     }
 }

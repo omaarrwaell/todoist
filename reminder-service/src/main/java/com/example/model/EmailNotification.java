@@ -17,7 +17,7 @@ public class EmailNotification implements Notification {
     }
 
     @Override
-    public void send(String recipient, String messageBody) {
+    public String send(String recipient, String messageBody) {
         try {
             logger.info("Sending email notification to: {}", recipient);
             SimpleMailMessage mailMessage = new SimpleMailMessage();
@@ -27,8 +27,10 @@ public class EmailNotification implements Notification {
             mailMessage.setText(messageBody);
             emailSender.send(mailMessage);
             logger.info("Email notification sent successfully to: {}", recipient);
+            return "Email sent to " + recipient;
         } catch (Exception e) {
             logger.error("Failed to send email notification to: {}", recipient, e);
+            return "Failed to send email to " + recipient + ": " + e.getMessage();
         }
     }
 }

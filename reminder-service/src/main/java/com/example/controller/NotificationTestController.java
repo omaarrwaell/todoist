@@ -19,6 +19,14 @@ public class NotificationTestController {
         return ResponseEntity.accepted().build();
     }
 
+    @PostMapping("/push")
+    public ResponseEntity<String> sendPushNotification(
+            @RequestParam String token,
+            @RequestParam String message) {
+        String result = notificationService.notify("push", token, message);
+        return ResponseEntity.ok(result);
+    }
+
     @Data
     static class EmailRequest {
         private String recipient;
